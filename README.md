@@ -1,7 +1,7 @@
 # Server API
 
 A minimal Node.js HTTP API used to demonstrate a separate server repository and
-automated Docker deployment.
+Docker image build.
 
 ## Run locally
 
@@ -29,7 +29,7 @@ The included Compose file uses a public Docker Hub image. For a local pull or
 deployment, create `.env` in this directory:
 
 ```dotenv
-DOCKERHUB_USERNAME=your-dockerhub-user-or-org
+DOCKERHUB_USERNAME=ishaq0925
 IMAGE_TAG=latest
 ```
 
@@ -43,50 +43,10 @@ docker compose ps
 
 The service is available at `http://localhost:3000/health`.
 
-## GitHub Actions CI/CD
+## GitHub Actions CI
 
-`.github/workflows/deploy.yml` runs tests and builds the container on pull
-requests targeting `main`; pull requests do not publish or deploy. A push to
-`main` or a manual workflow run publishes two public Docker Hub tags:
-
-- `DOCKERHUB_USERNAME/server:<commit-sha>`
-- `DOCKERHUB_USERNAME/server:latest`
-
-After publishing, the workflow runs on a private self-hosted GitHub Actions
-runner on the server VM. It writes the commit SHA into `.env`, pulls that exact
-image, recreates the Compose service, and sends a Slack notification if
-configured.
-
-### GitHub configuration
-
-In this repository's **Settings → Secrets and variables → Actions**, add:
-
-| Type | Name | Value |
-| --- | --- | --- |
-| Variable | `DOCKERHUB_USERNAME` | Docker Hub user or organization that owns the public `server` image |
-| Secret | `DOCKERHUB_TOKEN` | Docker Hub access token with permission to push |
-| Secret (optional) | `SLACK_WEBHOOK_URL` | Slack incoming webhook URL |
-
-Create the public Docker Hub repository `server` under that user or
-organization. Use an access token instead of a Docker Hub password.
-
-### Server VM runner
-
-Install Docker Engine and the Docker Compose v2 plugin on the Linux server VM.
-In this repository, go to **Settings → Actions → Runners → New self-hosted
-runner**, follow GitHub's registration instructions on the VM, add the custom
-runner label `server-vm`, and install/start the runner as a service. The
-workflow requires labels `self-hosted`, `linux`, and `server-vm`; confirm the
-runner is online before deploying. The runner account must be able to run
-`docker compose` non-interactively.
-
-The VM must be able to access GitHub and Docker Hub over HTTPS. Open port `3000`
-in the VM/network firewall only if the API should be reachable directly. Do
-not run untrusted pull request code on this deployment runner.
-
-## Roll back
-
-To redeploy an older version, set `IMAGE_TAG` in the VM checkout's `.env` to a
-previously published commit SHA and run `docker compose pull` followed by
-`docker compose up -d`. The normal workflow always deploys the current commit's
-immutable SHA tag.
+The workflow runs on pull requests, pushes to `main`, and manual runs. It runs
+`npm test`, builds the Docker image, and loads it into the runner's local
+Docker engine. It does not log in to Docker Hub, upload an image, or deploy to
+a VM. The GitHub-hosted runner is temporary, so the local image is available
+only during that workflow job.

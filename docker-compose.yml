@@ -1,6 +1,6 @@
 services:
   server:
-    image: ${DOCKERHUB_USERNAME:?Set DOCKERHUB_USERNAME}/${IMAGE_NAME:-server}:${IMAGE_TAG:?Set IMAGE_TAG}
+    image: ${DOCKERHUB_USERNAME:-ishaq0925}/${IMAGE_NAME:-lastpassword}:${IMAGE_TAG:?Set IMAGE_TAG}
     restart: unless-stopped
     ports:
       - "3000:3000"
