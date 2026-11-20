@@ -45,8 +45,12 @@ The service is available at `http://localhost:3000/health`.
 
 ## GitHub Actions CI
 
-The workflow runs on pull requests, pushes to `main`, and manual runs. It runs
-`npm test`, builds the Docker image, and loads it into the runner's local
-Docker engine. It does not log in to Docker Hub, upload an image, or deploy to
-a VM. The GitHub-hosted runner is temporary, so the local image is available
-only during that workflow job.
+The workflow runs `npm test` and builds the image on pull requests without
+publishing. Pushes to `main` and manual runs publish
+`ishaq0925/lastpassword:<commit-sha>` and `ishaq0925/lastpassword:latest` to
+Docker Hub. It does not deploy to a VM.
+
+Add a Docker Hub access token as the `DOCKERHUB_TOKEN` secret in this
+repository's **Settings → Secrets and variables → Actions**. The workflow
+uses the token only for non-pull-request builds. Never commit the token or
+use your account password.
