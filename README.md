@@ -14,9 +14,10 @@ docker run --rm -p 3001:80 a-little-more-light:local
 
 Open `http://localhost:3001/`. The deployed `mot` container uses port `3000`.
 
-`VERSION` (`1.4`) is the initial version baseline. Each successful push to
+`VERSION` (`1.8`) is the current version baseline. Each successful push to
 `main` increments the minor version above the latest numeric Git tag and
-publishes only that numeric image tag. A matching Git tag records each
+publishes only that numeric image tag. The next image is `1.9`; subsequent
+images will be `1.10`, `1.11`, and so on. A matching Git tag records each
 published version. Compose uses
 `IMAGE_TAG` from `.env` and replaces the container named `mot`. For a local
 pull and update, create `.env` in this directory:
@@ -24,7 +25,7 @@ pull and update, create `.env` in this directory:
 ```dotenv
 DOCKERHUB_USERNAME=ishaq0925
 IMAGE_NAME=lastpassword
-IMAGE_TAG=1.5
+IMAGE_TAG=1.9
 ```
 
 Then run:
