@@ -1,11 +1,5 @@
-FROM node:22-alpine
+FROM nginx:alpine
 
-ENV NODE_ENV=production
-WORKDIR /app
+COPY index.html /usr/share/nginx/html/index.html
 
-COPY --chown=node:node package.json ./
-COPY --chown=node:node src ./src
-
-USER node
-EXPOSE 3000
-CMD ["node", "src/server.js"]
+EXPOSE 80

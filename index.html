@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#183128">
+    <meta
+      name="description"
+      content="A quiet, magical place for a little inspiration and a fresh start."
+    >
+    <title>A Little More Light — Daily Inspiration</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: Georgia, "Times New Roman", serif;
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        --ink: #f5f8ee;
+        --muted: #d4e0d2;
+        --accent: #d5e6b9;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-width: 320px;
+        min-height: 100vh;
+        margin: 0;
+        overflow-x: hidden;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse at 50% 75%, rgb(173 207 151 / 24%), transparent 34rem),
+          linear-gradient(180deg, #101d1c 0%, #1c342b 39%, #3b5d46 72%, #839b70 100%);
+      }
+
+      button {
+        font: inherit;
+      }
+
+      .scene {
+        position: relative;
+        display: grid;
+        min-height: 100svh;
+        grid-template-rows: auto 1fr auto;
+        isolation: isolate;
+        overflow: hidden;
+      }
+
+      .sky,
+      .landscape,
+      .stars,
+      .aurora {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+
+      .sky {
+        position: fixed;
+        z-index: -3;
+        overflow: hidden;
+      }
+
+      .stars {
+        opacity: 0.72;
+        background-image:
+          radial-gradient(1px 1px at 8% 17%, #fff 98%, transparent),
+          radial-gradient(1.5px 1.5px at 19% 34%, #fff 98%, transparent),
+          radial-gradient(1px 1px at 29% 12%, #fff 98%, transparent),
+          radial-gradient(1.5px 1.5px at 38% 25%, #fff 98%, transparent),
+          radial-gradient(1px 1px at 49% 9%, #fff 98%, transparent),
+          radial-gradient(1px 1px at 59% 32%, #fff 98%, transparent),
+          radial-gradient(1.5px 1.5px at 70% 14%, #fff 98%, transparent),
+          radial-gradient(1px 1px at 81% 26%, #fff 98%, transparent),
+          radial-gradient(1.5px 1.5px at 91% 11%, #fff 98%, transparent),
+          radial-gradient(1px 1px at 95% 39%, #fff 98%, transparent);
+        background-size: 420px 300px;
+        mask-image: linear-gradient(#000 0%, transparent 78%);
+      }
+
+      .aurora {
+        inset: -18% -20% auto;
+        height: 58%;
+        border-radius: 50%;
+        filter: blur(48px);
+        opacity: 0.34;
+        transform: rotate(-12deg);
+        background:
+          radial-gradient(ellipse at 22% 55%, rgb(143 205 160 / 48%), transparent 30%),
+          radial-gradient(ellipse at 67% 42%, rgb(111 176 137 / 40%), transparent 36%),
+          radial-gradient(ellipse at 87% 68%, rgb(210 228 169 / 28%), transparent 30%);
+        animation: aurora-drift 18s ease-in-out infinite alternate;
+      }
+
+      .moon {
+        position: absolute;
+        top: clamp(5.5rem, 12vh, 8rem);
+        right: clamp(2.5rem, 15vw, 14rem);
+        width: clamp(4.5rem, 9vw, 7rem);
+        aspect-ratio: 1;
+        border-radius: 50%;
+        background: #edf3d5;
+        box-shadow:
+          0 0 25px 6px rgb(221 241 192 / 28%),
+          0 0 90px 30px rgb(184 222 167 / 16%);
+      }
+
+      .landscape {
+        position: fixed;
+        z-index: -2;
+        top: auto;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        height: min(48vh, 28rem);
+        min-height: 14rem;
+        -webkit-mask-image: linear-gradient(to bottom, transparent, #000 14%);
+        mask-image: linear-gradient(to bottom, transparent, #000 14%);
+      }
+
+      .landscape svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .topbar,
+      main,
+      footer {
+        width: min(100% - 3rem, 75rem);
+        margin-inline: auto;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-block: 1.6rem;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.7rem;
+        color: var(--ink);
+        font-family: system-ui, sans-serif;
+        font-size: 0.8rem;
+        font-weight: 650;
+        letter-spacing: 0.16em;
+        text-decoration: none;
+        text-transform: uppercase;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 2rem;
+        aspect-ratio: 1;
+        place-items: center;
+        border: 1px solid rgb(255 245 225 / 34%);
+        border-radius: 50%;
+        color: var(--accent);
+        font-size: 1rem;
+        box-shadow: 0 0 20px rgb(245 214 155 / 22%);
+      }
+
+      .top-note {
+        color: rgb(239 246 230 / 78%);
+        font-family: system-ui, sans-serif;
+        font-size: 0.78rem;
+        letter-spacing: 0.08em;
+      }
+
+      main {
+        display: grid;
+        align-content: center;
+        justify-items: center;
+        padding-block: 2.5rem 9rem;
+        text-align: center;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin: 0 0 1.35rem;
+        color: var(--accent);
+        font-family: system-ui, sans-serif;
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+      }
+
+      .eyebrow::before,
+      .eyebrow::after {
+        width: 1.6rem;
+        height: 1px;
+        content: "";
+        background: linear-gradient(90deg, transparent, var(--accent));
+      }
+
+      .eyebrow::after {
+        transform: rotate(180deg);
+      }
+
+      h1 {
+        max-width: 13ch;
+        margin: 0;
+        font-size: clamp(3.1rem, 7vw, 6.4rem);
+        font-weight: 400;
+        letter-spacing: -0.055em;
+        line-height: 0.99;
+        text-wrap: balance;
+        text-shadow: 0 6px 40px rgb(12 30 23 / 28%);
+      }
+
+      h1 span {
+        color: var(--accent);
+        font-style: italic;
+      }
+
+      .intro {
+        margin: 1.4rem 0 2.1rem;
+        color: var(--muted);
+        font-family: system-ui, sans-serif;
+        font-size: clamp(0.95rem, 2vw, 1.08rem);
+        line-height: 1.7;
+      }
+
+      .quote-card {
+        position: relative;
+        width: min(100%, 39rem);
+        padding: clamp(1.6rem, 4vw, 2.5rem);
+        border: 1px solid rgb(235 247 226 / 20%);
+        border-radius: 1.5rem;
+        background: linear-gradient(135deg, rgb(235 247 226 / 13%), rgb(235 247 226 / 5%));
+        box-shadow:
+          0 25px 80px rgb(12 31 23 / 24%),
+          inset 0 1px 0 rgb(239 248 228 / 15%);
+        backdrop-filter: blur(18px);
+      }
+
+      .quote-symbol {
+        position: absolute;
+        top: 0.15rem;
+        left: 1.2rem;
+        color: rgb(213 230 185 / 34%);
+        font-size: 5rem;
+        line-height: 1;
+        pointer-events: none;
+      }
+
+      blockquote {
+        position: relative;
+        margin: 0;
+        color: #f7faef;
+        font-size: clamp(1.35rem, 3vw, 2rem);
+        line-height: 1.5;
+        text-wrap: balance;
+      }
+
+      .quote-author {
+        margin: 1.2rem 0 0;
+        color: var(--accent);
+        font-family: system-ui, sans-serif;
+        font-size: 0.78rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.8rem;
+        margin-top: 1.5rem;
+      }
+
+      .button {
+        display: inline-flex;
+        min-height: 3rem;
+        align-items: center;
+        justify-content: center;
+        gap: 0.55rem;
+        padding: 0.75rem 1.15rem;
+        border: 1px solid rgb(235 247 226 / 24%);
+        border-radius: 999px;
+        color: var(--ink);
+        background: rgb(21 45 35 / 42%);
+        cursor: pointer;
+        font-family: system-ui, sans-serif;
+        font-size: 0.82rem;
+        font-weight: 600;
+        transition:
+          transform 180ms ease,
+          border-color 180ms ease,
+          background 180ms ease,
+          box-shadow 180ms ease;
+      }
+
+      .button:hover {
+        transform: translateY(-2px);
+        border-color: rgb(220 239 202 / 68%);
+        background: rgb(232 245 223 / 12%);
+        box-shadow: 0 8px 26px rgb(14 35 25 / 26%);
+      }
+
+      .button:focus-visible,
+      a:focus-visible {
+        outline: 3px solid var(--accent);
+        outline-offset: 4px;
+      }
+
+      .button-primary {
+        border-color: transparent;
+        color: #20372a;
+        background: linear-gradient(110deg, #dcebbf, #b5d2a4);
+      }
+
+      .button-primary:hover {
+        border-color: transparent;
+        background: linear-gradient(110deg, #edf5d9, #c7dfb4);
+        box-shadow: 0 8px 28px rgb(173 207 151 / 25%);
+      }
+
+      .button svg {
+        width: 1rem;
+        height: 1rem;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 1.7;
+      }
+
+      .status {
+        min-height: 1.25rem;
+        margin: 0.8rem 0 0;
+        color: #e2efca;
+        font-family: system-ui, sans-serif;
+        font-size: 0.78rem;
+      }
+
+      footer {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding-block: 1rem 1.5rem;
+        color: rgb(239 246 230 / 74%);
+        font-family: system-ui, sans-serif;
+        font-size: 0.75rem;
+        letter-spacing: 0.08em;
+        text-align: center;
+      }
+
+      .footer-star {
+        color: var(--accent);
+      }
+
+      @keyframes aurora-drift {
+        from {
+          transform: translate3d(-2%, -1%, 0) rotate(-12deg) scale(0.98);
+        }
+
+        to {
+          transform: translate3d(3%, 2%, 0) rotate(-7deg) scale(1.06);
+        }
+      }
+
+      @media (max-width: 600px) {
+        .topbar,
+        main,
+        footer {
+          width: min(100% - 2rem, 75rem);
+        }
+
+        .topbar {
+          padding-block: 1.2rem;
+        }
+
+        .top-note {
+          max-width: 10rem;
+          text-align: right;
+        }
+
+        main {
+          padding-block: 2rem 10rem;
+        }
+
+        .landscape {
+          height: 43vh;
+          min-height: 18rem;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="scene">
+      <div class="sky" aria-hidden="true">
+        <div class="stars"></div>
+        <div class="aurora"></div>
+        <div class="moon"></div>
+      </div>
+
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="A Little More Light, home">
+          <span class="brand-mark" aria-hidden="true">✦</span>
+          <span>A Little More Light</span>
+        </a>
+        <span class="top-note">A quiet place to begin again</span>
+      </header>
+
+      <main>
+        <p class="eyebrow">A little reminder for you</p>
+        <h1>There is still <span>magic</span> ahead.</h1>
+        <p class="intro">Take a breath. Let the night be soft. Your next chapter is waiting.</p>
+
+        <section class="quote-card" aria-label="A moment of inspiration">
+          <span class="quote-symbol" aria-hidden="true">“</span>
+          <blockquote id="quote" aria-live="polite">
+            You do not need to see the whole path. Just trust the light around your next step.
+          </blockquote>
+          <p class="quote-author" id="author">A note for today</p>
+        </section>
+
+        <div class="actions">
+          <button class="button button-primary" id="next-quote" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.64 5.64l1.42 1.42m9.88 9.88 1.42 1.42m0-12.72-1.42 1.42m-9.88 9.88-1.42 1.42"></path>
+              <circle cx="12" cy="12" r="4"></circle>
+            </svg>
+            Find another spark
+          </button>
+          <button class="button" id="copy-quote" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="8" y="8" width="12" height="12" rx="2"></rect>
+              <path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"></path>
+            </svg>
+            Copy this thought
+          </button>
+        </div>
+        <p class="status" id="status" role="status" aria-live="polite"></p>
+      </main>
+
+      <footer>
+        <span class="footer-star" aria-hidden="true">✦</span>
+        <span>Keep going gently. You are becoming.</span>
+        <span class="footer-star" aria-hidden="true">✦</span>
+      </footer>
+
+      <div class="landscape" aria-hidden="true">
+        <svg viewBox="0 0 1600 650" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="far-mountain" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stop-color="#829c83" stop-opacity=".62"></stop>
+              <stop offset="1" stop-color="#344f40" stop-opacity=".9"></stop>
+            </linearGradient>
+            <linearGradient id="near-mountain" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stop-color="#3d5945"></stop>
+              <stop offset="1" stop-color="#20372d"></stop>
+            </linearGradient>
+            <linearGradient id="valley-light" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stop-color="#d9e9bd" stop-opacity=".58"></stop>
+              <stop offset=".42" stop-color="#b5d4a6" stop-opacity=".22"></stop>
+              <stop offset="1" stop-color="#8cb794" stop-opacity="0"></stop>
+            </linearGradient>
+            <linearGradient id="river" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stop-color="#dcebc1" stop-opacity=".72"></stop>
+              <stop offset="1" stop-color="#9fc9a4" stop-opacity=".08"></stop>
+            </linearGradient>
+          </defs>
+          <ellipse cx="800" cy="370" rx="460" ry="180" fill="url(#valley-light)"></ellipse>
+          <path d="M0 370 180 190 288 307 440 118 628 352 817 157 1000 340 1198 126 1415 357 1512 249 1600 320v330H0Z" fill="url(#far-mountain)"></path>
+          <path d="m0 438 185-142 130 106 196-191 194 228 162-126 150 126 201-194 181 174 126-102 75 55v286H0Z" fill="url(#near-mountain)"></path>
+          <path d="M0 492c203-71 333-37 491-70 139-29 218-35 309 11 109 55 189 14 306-31 172-66 328-40 494 21v227H0Z" fill="#1b3026"></path>
+          <path d="M790 380c-10 62-28 122-110 270h240c-82-148-100-208-110-270Z" fill="url(#river)" opacity=".75"></path>
+          <path d="M0 560c196-70 362-54 512-8 128 40 212 43 306-7 125-66 245-82 390-44 143 37 258 32 392-13v162H0Z" fill="#172a22" opacity=".82"></path>
+          <g fill="#14261e">
+            <path d="m148 510 30-88 30 88h-18l31 68h-87l31-68Zm108 7 24-70 24 70h-14l26 57h-72l26-57Zm974-3 31-90 31 90h-18l32 70h-92l32-70Zm112 18 25-71 25 71h-15l27 58h-74l27-58Zm-890-15 28-81 28 81h-17l29 62h-80l29-62Z"></path>
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <script>
+      const thoughts = [
+        ["You do not need to see the whole path. Just trust the light around your next step.", "A note for today"],
+        ["Even the longest night makes room for a little dawn.", "A gentle reminder"],
+        ["Small brave things become beautiful beginnings.", "For the days you show up"],
+        ["You are allowed to grow at the pace of the seasons.", "From the quiet garden"],
+        ["Somewhere inside you is a strength that has carried you this far.", "Never forget"],
+        ["Let hope be the little lantern you carry into the unknown.", "A thought for the journey"],
+        ["The stars do not hurry, and still they find their way into the sky.", "Look up, then onward"],
+        ["Your next chapter does not need permission to be wonderful.", "Make room for wonder"]
+      ];
+
+      const quote = document.querySelector("#quote");
+      const author = document.querySelector("#author");
+      const status = document.querySelector("#status");
+      let currentThought = 0;
+
+      document.querySelector("#next-quote").addEventListener("click", () => {
+        currentThought = (currentThought + 1) % thoughts.length;
+        quote.textContent = thoughts[currentThought][0];
+        author.textContent = thoughts[currentThought][1];
+        status.textContent = "";
+      });
+
+      document.querySelector("#copy-quote").addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(`“${quote.textContent}” — ${author.textContent}`);
+          status.textContent = "Thought copied. Keep it close.";
+        } catch {
+          status.textContent = "Copy is unavailable here. Select the quote to save it.";
+        }
+      });
+    </script>
+  </body>
+</html>

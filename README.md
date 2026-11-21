@@ -1,36 +1,27 @@
-# Server API
+# A Little More Light
 
-A minimal Node.js HTTP API used to demonstrate a separate server repository and
-Docker image build.
+A small, self-contained motivational website with an illustrated twilight
+landscape, gentle aurora, and an interactive collection of original quotes.
+Everything is included locally; the page does not rely on external fonts,
+images, or scripts.
 
-## Run locally
-
-Requires Node.js 22 or newer.
-
-```sh
-npm test
-npm start
-```
-
-The API listens on port `3000` (override with `PORT`). Endpoints:
-
-- `GET /` returns a plain-text running message.
-- `GET /health` returns `{"status":"ok"}`.
-- Other paths return a JSON `404` response.
-
-## Build and run the container
+## Preview locally
 
 ```sh
-docker build -t server:local .
-docker run --rm -p 3000:3000 server:local
+docker build -t a-little-more-light:local .
+docker run --rm -p 3001:80 a-little-more-light:local
 ```
 
-The included Compose file uses a public Docker Hub image. For a local pull or
-deployment, create `.env` in this directory:
+Open `http://localhost:3001/`. The deployed `mot` container uses port `3000`.
+
+The workflow reads the image version from `VERSION`. Compose uses `IMAGE_TAG`
+from `.env` and replaces the container named `mot`. For a local pull and
+update, create `.env` in this directory:
 
 ```dotenv
 DOCKERHUB_USERNAME=ishaq0925
-IMAGE_TAG=latest
+IMAGE_NAME=lastpassword
+IMAGE_TAG=1.4
 ```
 
 Then run:
@@ -41,16 +32,35 @@ docker compose up -d
 docker compose ps
 ```
 
-The service is available at `http://localhost:3000/health`.
+The website is available at `http://localhost:3000/`.
 
-## GitHub Actions CI
+## Push-to-deploy workflow
 
-The workflow runs `npm test` and builds the image on pull requests without
-publishing. Pushes to `main` and manual runs publish
-`ishaq0925/lastpassword:<commit-sha>` and `ishaq0925/lastpassword:latest` to
-Docker Hub. It does not deploy to a VM.
+Every push to `main` validates and builds the website image, publishes version,
+commit-SHA, and `latest` tags to Docker Hub, then pulls the version tag back
+onto the local Docker machine and replaces its `mot` container. The deployment
+waits for the container health check before succeeding.
 
-Add a Docker Hub access token as the `DOCKERHUB_TOKEN` secret in this
-repository's **Settings → Secrets and variables → Actions**. The workflow
-uses the token only for non-pull-request builds. Never commit the token or
-use your account password.
+### Required GitHub setup
+
+1. Add a Docker Hub personal access token with **Read & Write** permission as
+   the `DOCKERHUB_TOKEN` repository secret in **Settings → Secrets and
+   variables → Actions**. Never commit the token or use an account password.
+2. Register the Windows machine that runs Docker as a **self-hosted GitHub
+   Actions runner** for this repository. Leave the standard `self-hosted`,
+   `windows`, and `x64` labels enabled.
+3. Keep Docker Desktop running and ensure the runner account can use Docker
+   and Docker Compose. The deployment job runs on this machine and needs
+   outbound access to GitHub and Docker Hub.
+4. Ensure port `3000` is available. The deployment replaces the existing
+   `mot` container and serves the site at `http://localhost:3000/`.
+
+The workflow runs only on pushes to `main`; pull requests do not execute on
+the self-hosted machine. Since the runner can control Docker on your machine,
+restrict write access to this repository to trusted collaborators.
+
+## Bump the image version
+
+Update `VERSION` before a release (for example, change `1.4` to `1.5`). The
+workflow publishes that version tag along with the commit SHA and `latest`,
+then deploys the new version to the local machine.
