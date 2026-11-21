@@ -14,14 +14,17 @@ docker run --rm -p 3001:80 a-little-more-light:local
 
 Open `http://localhost:3001/`. The deployed `mot` container uses port `3000`.
 
-The workflow reads the image version from `VERSION`. Compose uses `IMAGE_TAG`
-from `.env` and replaces the container named `mot`. For a local pull and
-update, create `.env` in this directory:
+`VERSION` (`1.4`) is the initial version baseline. Each successful push to
+`main` increments the minor version and publishes only that numeric image tag:
+the next image will be `ishaq0925/lastpassword:1.5`, followed by `1.6`, and so
+on. A matching Git tag records each published version. Compose uses
+`IMAGE_TAG` from `.env` and replaces the container named `mot`. For a local
+pull and update, create `.env` in this directory:
 
 ```dotenv
 DOCKERHUB_USERNAME=ishaq0925
 IMAGE_NAME=lastpassword
-IMAGE_TAG=1.4
+IMAGE_TAG=1.5
 ```
 
 Then run:
@@ -36,10 +39,10 @@ The website is available at `http://localhost:3000/`.
 
 ## Push-to-deploy workflow
 
-Every push to `main` validates and builds the website image, publishes version,
-commit-SHA, and `latest` tags to Docker Hub, then pulls the version tag back
-onto the local Docker machine and replaces its `mot` container. The deployment
-waits for the container health check before succeeding.
+Every push to `main` validates and builds the website image, publishes the next
+numeric version tag to Docker Hub, then pulls that tag back onto the local
+Docker machine and replaces its `mot` container. The deployment waits for the
+container health check before succeeding.
 
 ### Required GitHub setup
 
@@ -59,8 +62,8 @@ The workflow runs only on pushes to `main`; pull requests do not execute on
 the self-hosted machine. Since the runner can control Docker on your machine,
 restrict write access to this repository to trusted collaborators.
 
-## Bump the image version
+## Image version sequence
 
-Update `VERSION` before a release (for example, change `1.4` to `1.5`). The
-workflow publishes that version tag along with the commit SHA and `latest`,
-then deploys the new version to the local machine.
+The workflow increments the minor number on every successful push to `main`.
+`VERSION` is the starting baseline; after each publish, a matching numeric Git
+tag is recorded so the next run continues the sequence.

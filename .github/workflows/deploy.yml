@@ -5,11 +5,15 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   DOCKERHUB_USERNAME: ishaq0925
   IMAGE_NAME: lastpassword
+
+concurrency:
+  group: image-version-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   publish:
@@ -19,17 +23,29 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Validate website and read image version
+      - name: Validate website and calculate next image version
         id: version
         shell: bash
         run: |
           test -s index.html
-          version="$(tr -d '[:space:]' < VERSION)"
-          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+$ ]]; then
-            echo "VERSION must contain a numeric major.minor value" >&2
+          baseline="$(tr -d '[:space:]' < VERSION)"
+          if [[ ! "$baseline" =~ ^[0-9]+\.[0-9]+$ ]]; then
+            echo "VERSION must contain a numeric major.minor baseline" >&2
             exit 1
           fi
+
+          latest_tag="$(git tag --list | grep -E '^[0-9]+\.[0-9]+$' | sort -V | tail -n 1 || true)"
+          current="$baseline"
+          if [[ -n "$latest_tag" ]] && [[ "$(printf '%s\n' "$baseline" "$latest_tag" | sort -V | tail -n 1)" == "$latest_tag" ]]; then
+            current="$latest_tag"
+          fi
+
+          major="${current%%.*}"
+          minor="${current#*.}"
+          version="${major}.$((minor + 1))"
           echo "value=$version" >> "$GITHUB_OUTPUT"
 
       - name: Set up Docker Buildx
@@ -46,10 +62,16 @@ jobs:
         with:
           context: .
           push: true
-          tags: |
-            ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.value }}
-            ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-            ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+          tags: ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.value }}
+
+      - name: Record published image version
+        env:
+          IMAGE_VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$IMAGE_VERSION" -m "Publish Docker image $IMAGE_VERSION"
+          git push origin "refs/tags/$IMAGE_VERSION"
 
   deploy:
     needs: publish
