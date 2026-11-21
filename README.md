@@ -57,6 +57,17 @@ container health check before succeeding.
    outbound access to GitHub and Docker Hub.
 4. Ensure port `3000` is available. The deployment replaces the existing
    `mot` container and serves the site at `http://localhost:3000/`.
+5. To receive deployment result emails, add these repository Actions secrets:
+   `DEPLOYMENT_NOTIFICATION_EMAIL` (recipient), `MAIL_SERVER` (SMTP host),
+   `MAIL_PORT` (usually `587`), `MAIL_USERNAME` (sender account), and
+   `MAIL_PASSWORD` (SMTP password or app password). For Gmail, use
+   `smtp.gmail.com` and a Google App Password; do not use your regular account
+   password. Set the recipient secret to the email address you provided.
+
+The workflow sends an email after publishing and deployment finish, including
+the image version, job results, and a link to the Actions run. If the mail
+secrets are missing, the notification step emits a warning and skips sending;
+SMTP authentication or delivery errors fail the notification job visibly.
 
 The workflow runs only on pushes to `main`; pull requests do not execute on
 the self-hosted machine. Since the runner can control Docker on your machine,

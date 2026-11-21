@@ -130,3 +130,77 @@ jobs:
 
           docker compose logs --no-color website
           throw 'Timed out waiting for the website health check.'
+
+  notify:
+    name: Email deployment result
+    if: always()
+    needs: [publish, deploy]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send deployment email
+        env:
+          MAIL_SERVER: ${{ secrets.MAIL_SERVER }}
+          MAIL_PORT: ${{ secrets.MAIL_PORT }}
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          DEPLOYMENT_NOTIFICATION_EMAIL: ${{ secrets.DEPLOYMENT_NOTIFICATION_EMAIL }}
+          PUBLISH_RESULT: ${{ needs.publish.result }}
+          DEPLOY_RESULT: ${{ needs.deploy.result }}
+          IMAGE_VERSION: ${{ needs.publish.outputs.image_version }}
+          BRANCH_NAME: ${{ github.ref_name }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          python - <<'PY'
+          import os
+          import smtplib
+          import ssl
+          import sys
+          from email.message import EmailMessage
+
+          required = (
+              "MAIL_SERVER",
+              "MAIL_PORT",
+              "MAIL_USERNAME",
+              "MAIL_PASSWORD",
+              "DEPLOYMENT_NOTIFICATION_EMAIL",
+          )
+          missing = [name for name in required if not os.environ.get(name)]
+          if missing:
+              print(
+                  "::warning::Email notification skipped; configure repository "
+                  f"Actions secrets: {', '.join(missing)}"
+              )
+              sys.exit(0)
+
+          publish_result = os.environ["PUBLISH_RESULT"]
+          deploy_result = os.environ["DEPLOY_RESULT"]
+          success = publish_result == "success" and deploy_result == "success"
+          status = "SUCCEEDED" if success else "FAILED"
+          version = os.environ.get("IMAGE_VERSION") or "not published"
+
+          message = EmailMessage()
+          message["Subject"] = f"[servercicd] Deployment {status} ({version})"
+          message["From"] = os.environ["MAIL_USERNAME"]
+          message["To"] = os.environ["DEPLOYMENT_NOTIFICATION_EMAIL"]
+          message.set_content(
+              f"Deployment {status.lower()}.\n\n"
+              f"Branch: {os.environ['BRANCH_NAME']}\n"
+              f"Image version: {version}\n"
+              f"Publish job: {publish_result}\n"
+              f"Deploy job: {deploy_result}\n\n"
+              f"Workflow run: {os.environ['RUN_URL']}\n"
+          )
+
+          with smtplib.SMTP(
+              os.environ["MAIL_SERVER"],
+              int(os.environ["MAIL_PORT"]),
+              timeout=30,
+          ) as server:
+              server.starttls(context=ssl.create_default_context())
+              server.login(
+                  os.environ["MAIL_USERNAME"],
+                  os.environ["MAIL_PASSWORD"],
+              )
+              server.send_message(message)
+          print("Deployment email sent.")
+          PY
