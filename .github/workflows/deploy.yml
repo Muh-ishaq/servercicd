@@ -53,7 +53,7 @@ jobs:
 
   deploy:
     needs: publish
-    runs-on: [self-hosted, windows, x64]
+    runs-on: ubuntu-latest
     steps:
       - name: Check out deployment configuration
         uses: actions/checkout@v4
