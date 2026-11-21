@@ -5,7 +5,7 @@ landscape, gentle aurora, and an interactive collection of original quotes.
 Everything is included locally; the page does not rely on external fonts,
 images, or scripts.
 
-## Preview locally
+## Preview locally but i have to push it online as well
 
 ```sh
 docker build -t a-little-more-light:local .
