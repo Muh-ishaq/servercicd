@@ -1,81 +1,143 @@
 # A Little More Light
 
-A small, self-contained motivational website with an illustrated twilight
-landscape, gentle aurora, and an interactive collection of original quotes.
-Everything is included locally; the page does not rely on external fonts,
-images, or scripts.
+A small motivational website served with Nginx. The page includes a twilight
+illustration, an aurora effect, and a collection of original quotes. It is
+self-contained and does not use external fonts, images, or JavaScript libraries.
 
-## Preview locally but i have to push it online as well
+## Run it locally
 
-```sh
+From this folder, build the image:
+
+```powershell
 docker build -t a-little-more-light:local .
+```
+
+Then start a temporary container:
+
+```powershell
 docker run --rm -p 3001:80 a-little-more-light:local
 ```
 
-Open `http://localhost:3001/`. The deployed `mot` container uses port `3000`.
+Open `http://localhost:3001` in a browser.
 
-`VERSION` (`1.8`) is the current version baseline. Each successful push to
-`main` increments the minor version above the latest numeric Git tag and
-publishes only that numeric image tag. The next image is `1.9`; subsequent
-images will be `1.10`, `1.11`, and so on. A matching Git tag records each
-published version. Compose uses
-`IMAGE_TAG` from `.env` and replaces the container named `mot`. For a local
-pull and update, create `.env` in this directory:
+## Run with Docker Compose
+
+Create a `.env` file in this folder:
 
 ```dotenv
 DOCKERHUB_USERNAME=ishaq0925
 IMAGE_NAME=lastpassword
-IMAGE_TAG=1.9
+IMAGE_TAG=1.12
 ```
 
-Then run:
+Pull the selected image and start the website:
 
-```sh
+```powershell
 docker compose pull
 docker compose up -d
 docker compose ps
 ```
 
-The website is available at `http://localhost:3000/`.
+The Compose deployment names the container `mot` and publishes the website on
+`http://localhost:3000`.
 
-## Push-to-deploy workflow
+The image tag must be provided with `IMAGE_TAG`. Docker Compose does not choose
+it automatically.
 
-Every push to `main` validates and builds the website image, publishes the next
-numeric version tag to Docker Hub, then pulls that tag back onto the local
-Docker machine and replaces its `mot` container. The deployment waits for the
-container health check before succeeding.
+## Automatic deployment
 
-### Required GitHub setup
+The GitHub Actions workflow in `.github/workflows/deploy.yml` runs after every
+push to the `main` branch.
 
-1. Add a Docker Hub personal access token with **Read & Write** permission as
-   the `DOCKERHUB_TOKEN` repository secret in **Settings → Secrets and
-   variables → Actions**. Never commit the token or use an account password.
-2. Register the Windows machine that runs Docker as a **self-hosted GitHub
-   Actions runner** for this repository. Leave the standard `self-hosted`,
-   `windows`, and `x64` labels enabled.
-3. Keep Docker Desktop running and ensure the runner account can use Docker
-   and Docker Compose. The deployment job runs on this machine and needs
-   outbound access to GitHub and Docker Hub.
-4. Ensure port `3000` is available. The deployment replaces the existing
-   `mot` container and serves the site at `http://localhost:3000/`.
-5. To receive deployment result emails, add these repository Actions secrets:
-   `DEPLOYMENT_NOTIFICATION_EMAIL` (recipient), `MAIL_SERVER` (SMTP host),
-   `MAIL_PORT` (usually `587`), `MAIL_USERNAME` (sender account), and
-   `MAIL_PASSWORD` (SMTP password or app password). For Gmail, use
-   `smtp.gmail.com` and a Google App Password; do not use your regular account
-   password. Set the recipient secret to the email address you provided.
+It:
 
-The workflow sends an email after publishing and deployment finish, including
-the image version, job results, and a link to the Actions run. If the mail
-secrets are missing, the notification step emits a warning and skips sending;
-SMTP authentication or delivery errors fail the notification job visibly.
+1. Validates `index.html`.
+2. Finds the next numeric image version.
+3. Builds and publishes the image to Docker Hub.
+4. Creates a matching Git tag.
+5. Pulls the new image on a Windows self-hosted runner.
+6. Replaces the `mot` container and waits for its health check.
 
-The workflow runs only on pushes to `main`; pull requests do not execute on
-the self-hosted machine. Since the runner can control Docker on your machine,
-restrict write access to this repository to trusted collaborators.
+The current Docker Hub image is:
 
-## Image version sequence
+```text
+ishaq0925/lastpassword
+```
 
-The workflow increments the minor number on every successful push to `main`.
-`VERSION` is the starting baseline; after each publish, a matching numeric Git
-tag is recorded so the next run continues the sequence.
+## Versioning
+
+The `VERSION` file is the starting version baseline (`1.8`). The latest
+published tag is `1.11`, so the next image version is `1.12`.
+
+The workflow increments the minor version for each successful push to `main`
+and creates an annotated Git tag for each published image:
+
+```text
+1.11 -> 1.12 -> 1.13 -> ...
+```
+
+## GitHub Actions setup
+
+### Docker Hub
+
+Create a Docker Hub personal access token with Read & Write permission. Add it
+to the GitHub repository as the `DOCKERHUB_TOKEN` secret. Do not put the token
+in the workflow or source code.
+
+### Windows runner
+
+Register a Windows machine as a self-hosted GitHub Actions runner for this
+repository. The runner must have:
+
+- Docker Desktop running
+- Docker Compose available
+- Access to GitHub and Docker Hub
+- Permission to control Docker
+- Port `3000` available
+
+The workflow uses the standard `self-hosted`, `windows`, and `x64` labels.
+Because the runner can manage Docker on your machine, limit repository write
+access to trusted collaborators.
+
+## Deployment notifications
+
+The workflow can email the publish and deployment results. Configure these
+repository secrets:
+
+| Secret | Description |
+| --- | --- |
+| `DEPLOYMENT_NOTIFICATION_EMAIL` | Address that receives the notification |
+| `MAIL_SERVER` | SMTP server hostname |
+| `MAIL_PORT` | SMTP port, usually `587` |
+| `MAIL_USERNAME` | SMTP account or sender address |
+| `MAIL_PASSWORD` | SMTP password or app password |
+
+For Gmail, use an App Password instead of your regular account password. If
+the mail secrets are not configured, the workflow warns and skips the email.
+SMTP authentication or delivery errors are reported by the notification job.
+
+## Useful commands
+
+View the running container:
+
+```powershell
+docker compose ps
+```
+
+View website logs:
+
+```powershell
+docker compose logs --no-color website
+```
+
+Restart the website:
+
+```powershell
+docker compose restart website
+```
+
+Stop and remove the container:
+
+```powershell
+docker compose down
+```
